@@ -17,7 +17,18 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 requires-python = ">=3.9"
-dependencies = []
+dependencies = ["pydantic>=2,<3"]
+
+[project.optional-dependencies]
+api = ["fastapi>=0.111,<1", "uvicorn>=0.30,<1"]
+vienna = ["ViennaRNA>=2.6,<3"]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools]
+py-modules = ["cli", "enrichment", "simulator", "rna_shape_predictor_app"]
+
+[tool.setuptools.packages.find]
+include = ["agents*", "rna_shape_predictor*"]
 
 [project.scripts]
 rna-secondary-structure-vienna = "rna_shape_predictor.cli:main"
