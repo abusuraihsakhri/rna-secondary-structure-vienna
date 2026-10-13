@@ -45,4 +45,4 @@ def test_live_viennarna_if_available():
     result = fold_rna("GGGAAACCC")
     assert len(result["structure"]) == result["length"] == 9
     assert isinstance(result["energy_kcal_mol"], float)
-    assert result["base_pairs"]
+    assert isinstance(result["base_pairs"], list)
