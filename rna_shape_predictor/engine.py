@@ -1,7 +1,7 @@
 """
-Core Algorithmic Engine & Cryptographic / Biological Logic for RNAShape-Predictor: Minimum Free Energy (MFE) Secondary Structure & Dot-Bracket Agent.
+Legacy threshold-based evaluation engine; does not calculate RNA folding or energy.
 Domain: Computational Chemistry & AI Drug Discovery
-Standard: Turner 2004 RNA Thermodynamic Parameters
+Note: Threshold values below are project-specific, not Turner 2004 parameters.
 """
 import math
 from typing import Dict, Any, List, Optional
