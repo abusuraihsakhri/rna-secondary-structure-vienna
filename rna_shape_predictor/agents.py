@@ -1,5 +1,5 @@
 """
-Distributed Component Coordination & Executive Hierarchy for RNAShape-Predictor: Minimum Free Energy (MFE) Secondary Structure & Dot-Bracket Agent.
+Legacy numeric-threshold evaluation agents; these are not RNA structure predictors.
 Domain: Computational Chemistry & AI Drug Discovery
 """
 import uuid

@@ -1,176 +1,85 @@
 # RNA Secondary Structure Vienna
 
-> **Domain:** Computational Biology & AI Drug Discovery
-> **Reference Guidelines & Standards:** `wwPDB, IUPAC & CLSI Computational Guidelines`
+An RNA secondary-structure project with two **distinct** prediction methods: a standalone browser explorer using the Nussinov maximum-base-pair algorithm, and real thermodynamic minimum-free-energy (MFE) folding using the optional [ViennaRNA Python bindings](https://viennarna.readthedocs.io/en/latest/api_python.html).
 
-<div align="center">
+The repository also retains a legacy numeric-threshold audit CLI/API for compatibility. Those audits are **not** RNA structure or free-energy calculations.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+## Browser explorer
 
-</div>
+The static application is in [`web/`](web/). It runs locally in modern browsers and can be deployed to GitHub Pages. Enter a plain RNA sequence or a single FASTA record and select **Predict structure**.
 
----
+Features:
+- Canonical AU/GC and GU wobble base pairing; at least three unpaired hairpin nucleotides.
+- Pseudoknot-free Nussinov dynamic programming (maximum paired bases, not MFE).
+- Dot-bracket sequence, pairing arcs, length, paired-base count and GC percentage.
+- Copy and text export; clear invalid-input messages; a 240-nt browser limit.
+- No backend, analytics or sequence upload.
 
-## 📖 What It Does
+**Scientific limitation:** The browser algorithm does not model nearest-neighbor/Turner thermodynamics, loop free energies, temperature-dependent folding or partition functions. Its result may differ substantially from ViennaRNA and should not be interpreted as an MFE prediction. It is educational and exploratory, not clinically validated.
 
-**RNA Secondary Structure Vienna** is an analytical and computational platform implementing a multi-agent evaluation engine for RNA secondary structure analysis. It provides threshold-based assessment of biological metrics with cryptographic audit trails and PHI protection.
+## ViennaRNA MFE prediction (Python)
 
-The system uses a supervisor-worker architecture where specialized workers evaluate payloads against domain-specific thresholds, producing consensus dossiers with HMAC-SHA256 signed audit records.
-
----
-
-## ⚙️ Key Capabilities & Algorithmic Modules
-
-- **Multi-Agent Evaluation Engine**: Supervisor orchestrates specialized workers (QC, Safety, Protocol Conformance) for threshold-based assessment
-- **Risk & Urgency Classification**: Multi-tier categorization (ROUTINE, ELEVATED_RISK, CRITICAL_STAT_PANIC) with automated recommendations
-- **Validation & Guardrails**: Rigorous input bounds checking, path traversal prevention, and anomaly detection
-- **Zero-PHI Outbound Guard**: AST and regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers
-- **Tamper-Evident HMAC-SHA256 Audit Trail**: Chained, cryptographically signed logs for every evaluation
-- **FastAPI REST API**: Exposes OpenAPI 3.1 REST endpoints and operational metrics
-
----
-
-## 💻 Installation
+Requires Python 3.10–3.12 (CI-tested targets) and the separately installed ViennaRNA bindings:
 
 ```bash
-# Clone the repository
 git clone https://github.com/abusuraihsakhri/rna-secondary-structure-vienna.git
 cd rna-secondary-structure-vienna
-
-# Install dependencies
-pip install fastapi uvicorn pydantic pytest
+python -m pip install -e ".[api,vienna]"
+python cli.py fold --sequence GGGAAACCC
+python -m rna_shape_predictor.cli fold --sequence GGGAAACCC --json
 ```
 
----
+The `fold` commands normalize single-entry FASTA input and `T` → `U`, reject unsupported ambiguity codes, and enforce a 500-nucleotide limit. They return ViennaRNA's dot-bracket MFE prediction and its energy in kcal/mol (default ViennaRNA model). If ViennaRNA is absent, they report a dependency error; **they never substitute the browser approximation**.
 
-## 💻 CLI Quickstart & Usage
+Run the local API:
 
-### 1. Run a Single Audit
 ```bash
-python cli.py audit --task-id TASK-001 --target TARGET-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
+python cli.py serve --host 127.0.0.1 --port 8000
+curl -s -X POST http://127.0.0.1:8000/api/fold \
+  -H 'Content-Type: application/json' \
+  -d '{"sequence":"GGGAAACCC"}'
 ```
 
-### 2. Batch Process CSV Records
-```bash
-python cli.py batch -i sample.csv -o results.csv
-```
+The API returns `422` for invalid sequences and `503` when the native ViennaRNA dependency is unavailable. FastAPI serves interactive API documentation at `/docs`.
 
-### 3. Query the Supervisory Chat
+## Legacy audit workflows
+
+Existing numeric threshold and audit features remain usable; they operate on `task_id`, `target_identifier`, `primary_metric`, `secondary_metric`, `status_descriptor` and `is_critical_flag`.
+
 ```bash
+python cli.py audit --task-id TASK-001 --target TARGET-01 --primary 28.5 --secondary 14.2
+python cli.py batch --input sample.csv --output results.csv
+python cli.py verify-audit
 python cli.py chat "What is the system status?"
 ```
 
-### 4. Verify Audit Trail Integrity
-```bash
-python cli.py verify-audit
-```
+The API also retains `/health`, `/metrics`, `/api/audit`, `/api/chat`, and `/api/audit/logs`. A second legacy server entry point exists at `rna_shape_predictor.server:create_app`. Legacy enrichment modules are threshold demonstrations rather than validated RNA-structure algorithms. Mock chat providers perform no language-model inference.
 
-### 5. Launch REST API Server
-```bash
-python cli.py serve --host 127.0.0.1 --port 8000
-```
+## Security and privacy
 
-### Parameter Reference
-- `--task-id`: Unique task identifier (required, max 128 chars)
-- `--target`: Target identifier (required, max 128 chars)
-- `--primary`: Primary metric value (float)
-- `--secondary`: Secondary metric value (float, default: 0.0)
-- `--critical`: Flag for critical/emergency status
-- `--status`: Status descriptor (e.g., NOMINAL, DISCORDANT, ANOMALY)
-- `-i/--input`: Input CSV file path (batch mode)
-- `-o/--output`: Output CSV file path (batch mode)
+The browser explorer performs computation entirely in the browser and does not transmit sequences. The Python API is self-hosted; it processes supplied sequences locally. The legacy audit service retains in-memory task metadata and an in-memory chained HMAC audit log; these disappear on restart. An HMAC protects log integrity **only while its secret remains private**; it does not encrypt the log or provide durable storage. Basic identifier-pattern checks are **not** comprehensive PHI de-identification. Do not submit patient data to an unprotected server.
 
-### Input Data Schema
-
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `task_id` | Unique task identifier | Required |
-| `target_identifier` | Target entity identifier | Required |
-| `primary_metric` | Primary measurement value | Required |
-| `secondary_metric` | Secondary measurement value | Optional |
-| `is_critical_flag` | Emergency escalation flag | Optional |
-| `status_descriptor` | Status/phenotype descriptor | Optional |
-
----
-
-## 🛡️ Security & Enterprise Architecture
-
-* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, and patient identifiers.
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs for every evaluation and state transition. Set `AUDIT_SECRET_KEY` environment variable for production deployments.
-* **Input Validation:** Path traversal prevention, identifier sanitization, and finite metric validation.
-* **FastAPI REST API:** Exposes OpenAPI 3.1 REST endpoints and operational metrics (`/metrics`).
-
----
-
-## 🧪 Testing & Verification
-
-Run the automated test suite:
+For Docker Compose, generate a unique audit key and provide `AUDIT_SECRET_KEY` as an environment variable. The sample configuration intentionally contains no real secret.
 
 ```bash
-pytest -v
+python -c "import secrets; print(secrets.token_hex(32))"
+# Export the generated value privately as AUDIT_SECRET_KEY.
+docker compose up --build
 ```
 
-Execute high-throughput batch simulation benchmarks:
+Docker Compose binds port 8000 to the host's loopback interface by default. Add authentication and TLS before intentionally exposing any endpoint to a public network; the bundled API is not an authenticated multi-user service.
+
+## Development and tests
 
 ```bash
-python simulator.py 1000
+python -m pip install -e ".[api,vienna,test]"
+python -m pytest -q
+node --test tests/test_web.cjs
+python -m compileall -q agents rna_shape_predictor
 ```
 
----
+CI tests Python 3.10–3.12, the ViennaRNA adapter, browser folding, validation, and audit integrity. Modern Chromium, Firefox and Safari support the browser application; it uses standard JavaScript/DOM/SVG APIs and has no browser-Python runtime. The Pages workflow deploys only `web/` on pushes to `master`.
 
-## 🐳 Container Deployment
+## License
 
-```bash
-docker build -t rna-secondary-structure-vienna .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secret-key rna-secondary-structure-vienna
-```
-
-Or using Docker Compose:
-
-```bash
-docker-compose up -d
-```
-
----
-
-## 📁 Project Structure
-
-```
-├── agents/                  # Core multi-agent system
-│   ├── __init__.py          # Package metadata
-│   ├── api.py               # FastAPI REST server
-│   ├── base.py              # Security, PHI guard, audit trail
-│   ├── models.py            # Pydantic data models
-│   ├── supervisor.py        # Supervisor orchestrator
-│   ├── workers.py           # Specialized evaluation workers
-│   ├── llm_factory.py       # LLM client factory
-│   ├── learning.py          # Bayesian calibration engine
-│   ├── metrics.py           # Prometheus metrics collector
-│   └── streamer.py          # WebSocket telemetry broadcaster
-├── rna_shape_predictor/     # RNA structure prediction module
-│   ├── __init__.py
-│   ├── agents.py            # RNA-specific agents and coordinator
-│   ├── cli.py               # RNA predictor CLI
-│   ├── engine.py            # Core algorithmic engine
-│   ├── models.py            # Data models
-│   └── server.py            # FastAPI server factory
-├── tests/                   # Test suite
-├── web/                     # Web console (HTML)
-├── cli.py                   # Main CLI entry point
-├── enrichment.py            # Enrichment feature engines
-├── simulator.py             # High-throughput simulation
-├── pyproject.toml           # Project configuration
-├── Dockerfile               # Docker build config
-└── docker-compose.yml       # Docker Compose config
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE). The upstream ViennaRNA library has its own licensing terms; consult the [official project](https://github.com/ViennaRNA/ViennaRNA) for details.

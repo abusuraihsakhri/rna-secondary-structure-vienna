@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Rna Secondary Structure Vienna API",
-    "description": "Enterprise Distributed Component Platform (Clinical & Cryptographic AI) adhering to CAP / CLSI / NIST Standards.",
-    "version": "3.0.0-ENTERPRISE",
+    "title": "RNA Secondary Structure Vienna API",
+    "description": "Informational route outline. The running FastAPI server exposes the authoritative generated schema at /openapi.json. Includes ViennaRNA MFE folding and legacy numeric-threshold auditing.",
+    "version": "2.1",
     "contact": {
       "name": "Dr. Abu Suraih Sakhri",
       "url": "https://github.com/abusuraihsakhri"
@@ -25,14 +25,14 @@
         "summary": "Prometheus operational metrics",
         "responses": {
           "200": {
-            "description": "Prometheus text metrics"
+            "description": "JSON metrics snapshot (not Prometheus text)"
           }
         }
       }
     },
     "/api/audit": {
       "post": {
-        "summary": "Dispatch task payload across specialized workers",
+        "summary": "Legacy numeric threshold evaluation; not RNA folding",
         "requestBody": {
           "content": {
             "application/json": {
@@ -76,7 +76,7 @@
     },
     "/api/chat": {
       "post": {
-        "summary": "Air-gapped supervisory conversational assistant",
+        "summary": "Deterministic mock supervisor response; no external model inference",
         "requestBody": {
           "content": {
             "application/json": {
@@ -103,10 +103,45 @@
     },
     "/api/audit/logs": {
       "get": {
-        "summary": "Retrieve and cryptographically verify HMAC audit trail",
+        "summary": "Read in-memory audit metadata and HMAC verification state (no authentication)",
         "responses": {
           "200": {
             "description": "Cryptographic audit trail"
+          }
+        }
+      }
+    },
+    "/api/fold": {
+      "post": {
+        "summary": "Compute true RNA minimum-free-energy structure using the installed ViennaRNA bindings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sequence": {
+                    "type": "string",
+                    "description": "One A/C/G/U RNA sequence or FASTA entry (T is normalized to U); maximum 500 nt"
+                  }
+                },
+                "required": [
+                  "sequence"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dot-bracket MFE, kcal/mol energy, sequence and base pairs"
+          },
+          "422": {
+            "description": "Invalid or unsupported sequence"
+          },
+          "503": {
+            "description": "ViennaRNA dependency not installed"
           }
         }
       }

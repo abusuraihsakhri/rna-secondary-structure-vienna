@@ -7,12 +7,13 @@ from pydantic import BaseModel
 from .base import AuditLogger, PHIGuard
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
+from rna_shape_predictor.folding import FoldingUnavailableError, fold_rna
 
 supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Rna Secondary Structure Vienna API",
-    description="Enterprise Distributed Component Platform (AI Drug Discovery, Structural Biology & Wet-Lab Robotics)",
+    description="Legacy numeric-threshold auditing and optional ViennaRNA RNA structure folding",
     version="3.0.0-ENTERPRISE",
 )
 
@@ -53,3 +54,18 @@ def api_chat(req: ChatRequest):
 @app.get("/api/audit/logs")
 def api_audit_logs():
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}
+
+
+class FoldRequest(BaseModel):
+    sequence: str
+
+
+@app.post("/api/fold")
+def api_fold(req: FoldRequest):
+    """Compute ViennaRNA MFE, not the separate browser Nussinov approximation."""
+    try:
+        return fold_rna(req.sequence)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except FoldingUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc

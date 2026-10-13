@@ -1,236 +1,101 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rna Secondary Structure Vienna — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore RNA secondary structure with a local Nussinov base-pair predictor and dot-bracket visualization.">
+  <title>RNA Secondary Structure Explorer</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1020; --panel:#141d32; --line:#293a56; --text:#eaf2ff; --muted:#a8b9d2; --accent:#75b9ff; --error:#ffb9b9; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:radial-gradient(ellipse at 20% 0,#182b47,var(--bg) 60%); color:var(--text); font:16px/1.55 system-ui,-apple-system,Segoe UI,sans-serif; min-height:100vh; }
+    a { color:var(--accent); }
+    .page { width:min(1100px,calc(100% - 2rem)); margin:0 auto; padding:2.5rem 0 3rem; }
+    header { margin-bottom:1.8rem; border-bottom:1px solid var(--line); padding-bottom:1.5rem; }
+    .eyebrow { font-size:.78rem; color:var(--accent); font-weight:750; text-transform:uppercase; letter-spacing:.13em; margin:0 0 .5rem; }
+    h1 { font-size:clamp(1.7rem,4vw,2.5rem); line-height:1.14; margin:0 0 .7rem; letter-spacing:-.035em; }
+    h2 { margin:0 0 1rem; font-size:1.18rem; }
+    p { margin:.6rem 0; }
+    .intro,.explain { color:var(--muted); max-width:78ch; }
+    .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:1.2rem; align-items:start; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:1.4rem; min-width:0; }
+    label { display:block; font-weight:650; margin-bottom:.5rem; }
+    textarea { width:100%; min-height:185px; resize:vertical; font:15px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace; color:var(--text); background:#0b1426; border:1px solid #425675; border-radius:9px; padding:.85rem; }
+    textarea:focus-visible,button:focus-visible { outline:3px solid #8ecaff; outline-offset:3px; }
+    .help { font-size:.85rem; color:var(--muted); margin:.5rem 0 1rem; }
+    .actions { display:flex; flex-wrap:wrap; gap:.6rem; }
+    button { border:1px solid #42648a; background:#203752; color:#f3f8ff; font:inherit; font-weight:650; padding:.6rem 1rem; border-radius:8px; cursor:pointer; }
+    button.primary { background:#3887d0; border-color:#6ca9e6; color:#fff; }
+    button:hover { filter:brightness(1.14); }
+    .error { background:#43252e; border:1px solid #8b4858; color:var(--error); padding:.8rem; margin-top:1rem; border-radius:8px; }
+    [hidden] { display:none!important; }
+    .empty { color:var(--muted); padding:1.5rem 0; }
+    .metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.6rem; margin:1rem 0; }
+    .metric { border:1px solid var(--line); background:#0c1629; padding:.75rem; border-radius:9px; }
+    .metric strong { display:block; font-size:1.35rem; font-variant-numeric:tabular-nums; }
+    .metric span { font-size:.77rem; color:var(--muted); }
+    .code-label { margin:1rem 0 .3rem; font-size:.8rem; font-weight:650; color:var(--muted); }
+    pre { background:#0b1426; border:1px solid var(--line); padding:.85rem; border-radius:9px; overflow-x:auto; margin:0; font:14px/1.5 ui-monospace,Consolas,monospace; }
+    .scroll { overflow-x:auto; background:#0b1426; border:1px solid var(--line); border-radius:9px; padding:.35rem; }
+    svg { display:block; }
+    .footnotes { margin-top:1.2rem; border-top:1px solid var(--line); padding-top:1rem; }
+    .footnotes p { color:var(--muted); font-size:.91rem; }
+    #copy-status { color:var(--muted); font-size:.85rem; }
+    @media(max-width:790px) { .grid { grid-template-columns:1fr; } .metrics { grid-template-columns:repeat(2,1fr); } .page { padding-top:1.5rem; } }
+  </style>
+  <script src="./app.js" defer></script>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Rna Secondary Structure Vienna</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
+<main class="page">
+  <header>
+    <p class="eyebrow">Computational biology · Local browser analysis</p>
+    <h1>RNA Secondary Structure Explorer</h1>
+    <p class="intro">Enter one RNA sequence to predict a nested base-pair arrangement, inspect dot-bracket notation, and export the result. Runs entirely in your browser; no sequence is uploaded.</p>
+  </header>
+  <div class="grid">
+    <section class="panel" aria-labelledby="input-title">
+      <h2 id="input-title">Sequence input</h2>
+      <form id="fold-form" novalidate>
+        <label for="sequence">RNA sequence or single-entry FASTA</label>
+        <textarea id="sequence" name="sequence" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="GGGAAACCC" aria-describedby="input-help" required></textarea>
+        <p id="input-help" class="help">A, C, G, U only (T is converted to U). Maximum 240 nt. Ambiguity codes are not supported.</p>
+        <div class="actions">
+          <button class="primary" type="submit">Predict structure</button>
+          <button type="button" id="example">Load example</button>
         </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
+      </form>
+      <p id="error" class="error" role="alert" hidden></p>
+    </section>
+    <section class="panel" aria-labelledby="result-title">
+      <h2 id="result-title">Prediction</h2>
+      <p class="empty" id="empty-note">No prediction yet. Enter a sequence and select <strong>Predict structure</strong>.</p>
+      <div id="results" hidden>
+        <p class="help">Nussinov maximum-pair prediction. <strong>Not ViennaRNA MFE.</strong></p>
+        <div class="metrics" aria-label="Prediction statistics">
+          <div class="metric"><strong id="out-length">—</strong><span>Nucleotides</span></div>
+          <div class="metric"><strong id="out-pairs">—</strong><span>Base pairs</span></div>
+          <div class="metric"><strong id="out-gc">—</strong><span>GC content</span></div>
+          <div class="metric"><strong id="out-unpaired">—</strong><span>Unpaired bases</span></div>
         </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
+        <p class="code-label">Normalized sequence (5′ → 3′)</p>
+        <pre id="out-sequence" aria-label="Normalized RNA sequence"></pre>
+        <p class="code-label">Dot-bracket structure</p>
+        <pre id="out-structure" aria-label="Predicted dot bracket structure"></pre>
+        <p class="code-label">Base-pair arcs (horizontal scroll for long sequences)</p>
+        <div class="scroll"><svg id="arcs" role="img" aria-label="Arcs connect paired nucleotides along the RNA sequence"></svg></div>
+        <div class="actions" style="margin-top:1rem;">
+          <button type="button" id="copy">Copy result</button>
+          <button type="button" id="download">Download .txt</button>
+          <span id="copy-status" aria-live="polite"></span>
         </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Rna Secondary Structure Vienna Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "rna-secondary-structure-vienna",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+      </div>
+    </section>
+  </div>
+  <section class="footnotes" aria-label="Methods and limitations">
+    <h2>Method and limitations</h2>
+    <p>This offline tool uses the Nussinov dynamic-programming algorithm to maximize the number of AU, GC and GU pairs, requiring at least three unpaired nucleotides inside hairpin loops. It predicts pseudoknot-free structures, not thermodynamic minimum free energy; it does not use stacking energies, Turner parameters or partition functions.</p>
+    <p>For thermodynamic folding, install the repository's optional <a href="https://viennarna.readthedocs.io/en/latest/api_python.html" rel="noopener noreferrer">ViennaRNA Python bindings</a> and run the <code>fold</code> CLI or local <code>/api/fold</code> endpoint. <a href="https://github.com/abusuraihsakhri/rna-secondary-structure-vienna">Source and usage</a>.</p>
+  </section>
+</main>
 </body>
 </html>
