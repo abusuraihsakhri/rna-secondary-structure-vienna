@@ -38,7 +38,26 @@ def main(argv=None):
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
 
+    p_fold = subparsers.add_parser("fold", help="Compute ViennaRNA MFE structure")
+    p_fold.add_argument("--sequence", required=True, help="RNA sequence")
+    p_fold.add_argument("--json", action="store_true", help="Emit JSON output")
+
     args = parser.parse_args(argv)
+
+    if args.command == "fold":
+        import json
+        from .folding import FoldingUnavailableError, fold_rna
+        try:
+            result = fold_rna(args.sequence)
+        except (ValueError, FoldingUnavailableError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            print(result["sequence"])
+            print(f'{result["structure"]} ({result["energy_kcal_mol"]:.2f} kcal/mol)')
+        return 0
 
     if args.command == "audit":
         payload = FrontierPayload(
