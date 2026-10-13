@@ -13,7 +13,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Rna Secondary Structure Vienna API",
-    description="Enterprise Distributed Component Platform (AI Drug Discovery, Structural Biology & Wet-Lab Robotics)",
+    description="Legacy numeric-threshold auditing and optional ViennaRNA RNA structure folding",
     version="3.0.0-ENTERPRISE",
 )
 
