@@ -16,7 +16,7 @@ def create_app():
 
         app = FastAPI(
             title="RNAShape-Predictor: Minimum Free Energy (MFE) Secondary Structure & Dot-Bracket Agent",
-            description="Implements Zuker-Turner nearest-neighbor thermodynamic parameters (dG kcal/mol) computing hairpin, bulge, internal, and multi-branch RNA loops.",
+            description="Provides a legacy numeric threshold audit and, if ViennaRNA is installed, genuine RNA minimum-free-energy folding at /api/fold.",
             version="2.0.0-FRONTIER",
         )
 
