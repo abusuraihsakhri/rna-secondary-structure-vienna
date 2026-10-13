@@ -67,7 +67,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 docker compose up --build
 ```
 
-The default Docker service binds port 8000 to the host. Restrict its network exposure and add authentication and TLS before placing any endpoints on a public network; the bundled API is not an authenticated multi-user service.
+Docker Compose binds port 8000 to the host's loopback interface by default. Add authentication and TLS before intentionally exposing any endpoint to a public network; the bundled API is not an authenticated multi-user service.
 
 ## Development and tests
 
