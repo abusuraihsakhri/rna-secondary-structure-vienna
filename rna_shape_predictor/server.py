@@ -4,13 +4,14 @@ FastAPI REST API Server for RNAShape-Predictor: Minimum Free Energy (MFE) Second
 from typing import Dict, Any
 from .models import FrontierPayload
 from .agents import RNAStructureCoordinator
+from .folding import FoldingUnavailableError, fold_rna
 
 coordinator = RNAStructureCoordinator()
 
 
 def create_app():
     try:
-        from fastapi import FastAPI
+        from fastapi import FastAPI, HTTPException
         from pydantic import BaseModel
 
         app = FastAPI(
@@ -30,6 +31,18 @@ def create_app():
 
         class ChatRequest(BaseModel):
             query: str
+
+        class FoldRequest(BaseModel):
+            sequence: str
+
+        @app.post("/api/fold")
+        def api_fold(req: FoldRequest):
+            try:
+                return fold_rna(req.sequence)
+            except ValueError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+            except FoldingUnavailableError as exc:
+                raise HTTPException(status_code=503, detail=str(exc)) from exc
 
         @app.get("/health")
         def health():
